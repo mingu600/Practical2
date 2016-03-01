@@ -53,15 +53,22 @@ class GaussianGenerativeModel:
         self.mu = (np.dot(newY.T,X).T/self.ysum).T
         print "mu is ", self.mu
         #find sigma for shared and not shared
-        self.S1 = self.__covariance(X,self.mu,newY,0)
-        self.S2 = self.__covariance(X,self.mu,newY,1)
-        self.S3 = self.__covariance(X,self.mu,newY,2)
-        self.S = self.ysum[0]*self.S1/np.sum(self.ysum) + self.ysum[1]*self.S2/np.sum(self.ysum) + self.ysum[2]*self.S3/np.sum(self.ysum)
+        self.SX = range(self.K)
+        self.S = 0
+        for x in range(self.K):
+            SX[x] = self.__covariance(X,self.mu,newY,x)
+            S += self.ysum[x] * SX[x]/np.sum(self.ysum)
+        #self.S1 = self.__covariance(X,self.mu,newY,0)
+        #self.S2 = self.__covariance(X,self.mu,newY,1)
+        #self.S3 = self.__covariance(X,self.mu,newY,2)
+        #self.S = self.ysum[0]*self.S1/np.sum(self.ysum) + self.ysum[1]*self.S2/np.sum(self.ysum) + self.ysum[2]*self.S3/np.sum(self.ysum)
         print "dependent cov matrix ", self.S
         if self.isSharedCovariance:
-            self.S1 = self.S
-            self.S2 = self.S
-            self.S3 = self.S
+            for x in range(self.K):
+                SX[x] = self.S
+            #    self.S1 = self.S
+            #   self.S2 = self.S
+            #   self.S3 = self.S
         #if isSharedCovariance:
         #    prob = self.__gaussianPdf(X,mu,S)
         #    self.__classCondProb(prob,prob,prob)
@@ -87,31 +94,4 @@ class GaussianGenerativeModel:
         print "output Y is ", Y[0], np.shape(Y)
         return np.argmax(Y, axis = 1)
 
-    # Do not modify this method!
-    def visualize(self, output_file, width=3, show_charts=False):
-        X = self.X
 
-        # Create a grid of points
-        x_min, x_max = min(X[:, 0] - width), max(X[:, 0] + width)
-        y_min, y_max = min(X[:, 1] - width), max(X[:, 1] + width)
-        xx,yy = np.meshgrid(np.arange(x_min, x_max, .05), np.arange(y_min,
-            y_max, .05))
-
-        # Flatten the grid so the values match spec for self.predict
-        xx_flat = xx.flatten()
-        yy_flat = yy.flatten()
-        X_topredict = np.vstack((xx_flat,yy_flat)).T
-
-        # Get the class predictions
-        Y_hat = self.predict(X_topredict)
-        Y_hat = Y_hat.reshape((xx.shape[0], xx.shape[1]))
-
-        cMap = c.ListedColormap(['r','b','g'])
-
-        # Visualize them.
-        plt.figure()
-        plt.pcolormesh(xx,yy,Y_hat, cmap=cMap)
-        plt.scatter(X[:, 0], X[:, 1], c=self.Y, cmap=cMap)
-        plt.savefig(output_file)
-        if show_charts:
-            plt.show()
