@@ -18,7 +18,9 @@ import util
 TRAIN_DIR = "train"
 
 call_set = set([])
-
+malware_classes = ["Agent", "AutoRun", "FraudLoad", "FraudPack", "Hupigon", "Krap","Lipler",
+                           "Magania", "None", "Poison", "Swizzor", "Tdss", "VB", "Virut", "Zbot"]
+tagnums =[[] for x in xrange(len(malware_classes))]
 def add_to_set(tree):
     for el in tree.iter():
         call = el.tag
@@ -54,44 +56,17 @@ def create_data_matrix(start_index, end_index, direc="train"):
 
         # parse file as an xml document
         tree = ET.parse(os.path.join(direc,datafile))
-        add_to_set(tree)
-        this_row = call_feats(tree)
-        if X is None:
-            X = this_row
-        else:
-            X = np.vstack((X, this_row))
+        counter = 0
+        for node in tree.iter():
+            print node.text
+    #         counter = counter + 1
+    #     tagnums[util.malware_classes.index(clazz)].append(counter)
+    # print tagnums
 
-    return X, np.array(classes), ids
-
-def call_feats(tree):
-    good_calls = ['sleep', 'dump_line']
-
-    call_counter = {}
-    for el in tree.iter():
-        call = el.tag
-        if call not in call_counter:
-            call_counter[call] = 0
-        else:
-            call_counter[call] += 1
-
-    call_feat_array = np.zeros(len(good_calls))
-    for i in range(len(good_calls)):
-        call = good_calls[i]
-        call_feat_array[i] = 0
-        if call in call_counter:
-            call_feat_array[i] = call_counter[call]
-
-    return call_feat_array
 
 ## Feature extraction
 def main():
-    X_train, t_train, train_ids = create_data_matrix(0, 5, TRAIN_DIR)
-    X_valid, t_valid, valid_ids = create_data_matrix(10, 15, TRAIN_DIR)
-
-    print 'Data matrix (training set):'
-    print X_train
-    print 'Classes (training set):'
-    print t_train
+    create_data_matrix(0, 1, TRAIN_DIR)
 
     # From here, you can train models (eg by importing sklearn and inputting X_train, t_train).
 
